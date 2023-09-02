@@ -1,0 +1,60 @@
+def clustername = params.cluster
+def port = params.port
+def tag = params.tag
+
+pipeline {
+
+    agent any
+
+    stages {
+
+        stage('Build') {
+            steps {
+             	sh '''
+                    echo "Cluster Name: $clustername"
+                    pwd
+                    cd nodejs_app/
+                    sudo su
+                    docker build . -t sampubeta/nodejs-app:$tag		
+                    docker run -p $port:3000 -d nodejs-app
+                    docker ps -a |grep node
+                    sleep 5
+                    curl -i localhost:$port
+		    '''
+            }
+
+        }
+
+        stage('Push') {
+            steps {
+                sh '''
+                #cat ~/password.txt | docker login --username sampubeta --password-stdin
+                docker login --username sampubeta --password devOps777
+			    docker push sampubeta/nodejs-app:$tag
+		        '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                  echo "Exporting Kubeconfig"
+                  #export KUBECONFIG=/u/qstauto/.kube/auto/$clustername/kubeconfig
+                  export KUBECONFIG=/u/qstauto/.kube/auto/testing-m1.soltstgroupsgs.sashq-d.openstack.sas.com/kubeconfig
+                  kubectl version
+                  pwd
+                  cd nodejs_app/
+                  #docker login --username sampubeta --password devOps777
+                  kubectl apply -f node_app_deploy.yaml --validate=false
+                  kubectl apply -f node_app_service.yaml
+                  kubectl patch svc node-app-service -p '{"spec": {"type": "NodePort"}}'
+                  sleep 5
+                  kubectl get pod|grep node
+                  pod_name=`kubectl get po |grep node|cut -d" " -f1`
+                  sleep 10
+                  kubectl logs $pod_name
+                '''
+            }
+        }
+    }
+}

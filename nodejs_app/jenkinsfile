@@ -30,7 +30,7 @@ pipeline {
                 sh '''
                 #cat ~/password.txt | docker login --username sampubeta --password-stdin
                 docker login --username sampubeta --password devOps777
-			    docker push sampubeta/nodejs-app:$tag
+		docker push sampubeta/nodejs-app:$tag
 		        '''
             }
         }

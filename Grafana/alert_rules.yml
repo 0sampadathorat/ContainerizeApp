@@ -1,0 +1,104 @@
+#container_last_seen{name=~"my-app|nginx|redis|rabbitmq|promtail|my-alpine|my-ubuntu|portainer"} > 60
+groups:
+- name: docker-alerts
+  rules:
+  - alert: DockerContainerDown
+    expr: (time() - container_last_seen{name!=""} >60)
+    for: 1m
+    labels:
+      host: "{{ $labels.host }}"
+      name: "{{ $labels.name }}"
+      pt_devops_teams: "true"
+      pt_devops_sanket: "true"
+      orgID: it-du-qual
+    annotations:
+      summary: "[P2] Container {{ $labels.name }} is Down on {{ $labels.host }}"
+      description: "Container {{ $labels.name }} is Stopped/Killed."
+      
+  - alert: DockerContainerLoopRestarting
+    expr: (node_filesystem_size_bytes{instance=~'ksb00apl0148',fstype=~"ext.*|xfs",mountpoint !~".*pod.*"}-node_filesystem_free_bytes{instance=~'ksb00apl0148',fstype=~"ext.*|xfs",mountpoint !~".*pod.*"}) *100/(node_filesystem_avail_bytes {instance=~'ksb00apl0148',fstype=~"ext.*|xfs",mountpoint !~".*pod.*"}+(node_filesystem_size_bytes{instance=~'ksb00apl0148',fstype=~"ext.*|xfs",mountpoint !~".*pod.*"}-node_filesystem_free_bytes{instance=~'ksb00apl0148',fstype=~"ext.*|xfs",mountpoint !~".*pod.*"}))
+    for: 2m
+    labels:
+      pt_devops_teams: "true"
+      pt_devops_sanket: "true"
+      orgID: it-du-qual
+    annotations:
+      summary: "[P2] Container {{ $labels.container }} is in a restart loop on {{ $labels.host }}"
+      description: "Container {{ $labels.container }} has restarted more than 5 times in the last 5 minutes. Immediate investigation is required."
+  
+  - alert: HostHighCPULoad
+    expr: (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) < 0.2) #Total cpu available 
+    for: 2m
+    labels:
+      pt_devops_teams: "true"
+      pt_devops_sanket: "true"
+      orgID: it-du-qual
+    annotations:
+      summary: "[Warning] High CPU Load on {{ $labels.instance }}"
+      description: "CPU load exceeds 80% for more than 5 minutes on {{ $labels.instance }}."
+
+  - alert: HostCriticalCPULoad
+    expr: (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) < 0.1)
+    for: 2m
+    labels:
+      pt_devops_teams: "true"
+      pt_devops_sanket: "true"
+      orgID: it-du-qual
+    annotations:
+      summary: "[Critical] Critical CPU Load on {{ $labels.instance }}"
+      description: "CPU load exceeds 90% for more than 5 minutes on {{ $labels.instance }}."
+
+  - alert: HostHighMemoryUsage
+    expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.2 #Total memory available for use
+    for: 2m
+    labels:
+      pt_devops_teams: "true"
+      pt_devops_sanket: "true"
+      orgID: it-du-qual
+    annotations:
+      summary: "[Warning] High Memory Usage on {{ $labels.instance }}"
+      description: "Memory usage exceeds 80% on {{ $labels.instance }}."
+
+  - alert: HostCriticalMemoryUsage
+    expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.1
+    for: 2m
+    labels:
+      pt_devops_teams: "true"
+      pt_devops_sanket: "true"
+      orgID: it-du-qual
+    annotations:
+      summary: "[Critical] Critical Memory Usage on {{ $labels.instance }}"
+      description: "Memory usage exceeds 90% on {{ $labels.instance }}."
+
+  - alert: HostReboot
+    expr: (time() - node_boot_time_seconds < 300)
+    for: 1m
+    labels:
+      pt_devops_teams: "true"
+      pt_devops_sanket: "true"
+      orgID: it-du-qual
+    annotations:
+      summary: "[Critical] Host Reboot Detected on {{ $labels.instance }}"
+      description: "The host {{ $labels.instance }} has rebooted in the last 5 minutes."
+
+  - alert: HostHighDiskUtilization
+    expr: (node_filesystem_size_bytes{fstype!~"tmpfs|devtmpfs|proc|sysfs"}> 0.85)
+    for: 5m
+    labels:
+      pt_devops_teams: "true"
+      pt_devops_sanket: "true"
+      orgID: it-du-qual
+    annotations:
+      summary: "[Warning] High Disk Utilization on {{ $labels.instance }}"
+      description: "Disk usage exceeds 85% on {{ $labels.instance }}."
+
+  - alert: HostCriticalDiskUtilization
+    expr: (node_filesystem_size_bytes{fstype!~"tmpfs|devtmpfs|proc|sysfs"} > 0.9)
+    for: 5m
+    labels:
+      pt_devops_teams: "true"
+      pt_devops_sanket: "true"
+      orgID: it-du-qual
+    annotations:
+      summary: "[Critical] Critical Disk Utilization on {{ $labels.instance }}"
+      description: "Disk usage exceeds 90% on {{ $labels.instance }}."

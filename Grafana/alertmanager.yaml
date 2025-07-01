@@ -1,0 +1,22 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp-mailhog:1025'
+  smtp_from: 'alertmanager@localhost.com'
+  smtp_require_tls: false  # No TLS required for MailHog
+
+route:
+  receiver: 'email-alert'
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 5m
+  repeat_interval: 3h
+
+receivers:
+  - name: 'email-alert'
+    email_configs:
+      - to: '4735beb6.ksbcentral.onmicrosoft.com@de.teams.ms'
+        send_resolved: true
+        headers:
+          #subject: '{{ .CommonAnnotations.summary }}' 
+          #subject: '{{ range .Alerts }}{{ .Annotations.summary }}; {{ end }}'
+          subject: '[{{ .Status | toUpper }}] {{ range .Alerts }}{{ .Annotations.summary }} | {{ end }}'

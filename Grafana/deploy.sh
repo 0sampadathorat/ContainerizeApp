@@ -1,0 +1,1 @@
+sudo docker-compose --compatibility pull && sudo docker-compose --compatibility down && sudo docker-compose --compatibility up -d

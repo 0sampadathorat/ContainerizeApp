@@ -1,0 +1,7 @@
+FROM eclipse-temurin:17-alpine
+#COPY KSBCA.crt /usr/local/share/ca-certificates/KSBCA.crt
+#RUN cat  /usr/local/share/ca-certificates/KSBCA.crt >> /etc/ssl/certs/ca-certificates.crt
+RUN apk --no-cache add ca-certificates && rm -rf /var/cache/apk/ && apk --no-cache add maven && apk --no-cache add java-cacerts 
+#RUN update-ca-certificates
+RUN apk update && apk add --upgrade apk-tools && apk upgrade --available
+#RUN rm ${JAVA_HOME}/lib/security/cacerts && ln -s /etc/ssl/certs/java/cacerts ${JAVA_HOME}/lib/security/cacerts

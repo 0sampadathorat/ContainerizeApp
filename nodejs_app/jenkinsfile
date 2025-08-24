@@ -8,9 +8,11 @@ pipeline {
         stage('Push to Docker Registry') {
             steps {
                 withDockerRegistry(credentialsId: 'dockerhub', url: 'https://registry.hub.docker.com') {
+                    sh '''
                     cd nodejs_app/
-                    sh 'docker build -t sampubeta/nodejs-app .'
-                    sh 'docker push sampubeta/nodejs-app'
+                    docker build -t sampubeta/nodejs-app .
+                    docker push sampubeta/nodejs-app
+                    '''
                 }
              }
          }

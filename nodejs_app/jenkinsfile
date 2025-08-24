@@ -10,8 +10,9 @@ pipeline {
 
         stage('Build') {
             steps {
+				echo "Cluster Name: ${clustername}"
+				echo "Port: ${port}
              	sh '''
-                    echo "Cluster Name: $clustername"
                     pwd
                     cd nodejs_app/
                     sudo su
@@ -30,7 +31,7 @@ pipeline {
                 sh '''
                 #cat ~/password.txt | docker login --username sampubeta --password-stdin
                 docker login --username sampubeta --password devOps777
-		docker push sampubeta/nodejs-app:$tag
+		        docker push sampubeta/nodejs-app:$tag
 		        '''
             }
         }
@@ -39,12 +40,10 @@ pipeline {
             steps {
                 sh '''
                   echo "Exporting Kubeconfig"
-                  #export KUBECONFIG=/u/qstauto/.kube/auto/$clustername/kubeconfig
-                  export KUBECONFIG=/u/qstauto/.kube/auto/testing-m1.soltstgroupsgs.sashq-d.openstack.sas.com/kubeconfig
+                  export KUBECONFIG="${clustername}"
                   kubectl version
                   pwd
                   cd nodejs_app/
-                  #docker login --username sampubeta --password devOps777
                   kubectl apply -f node_app_deploy.yaml --validate=false
                   kubectl apply -f node_app_service.yaml
                   kubectl patch svc node-app-service -p '{"spec": {"type": "NodePort"}}'

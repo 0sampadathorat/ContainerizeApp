@@ -11,7 +11,7 @@ pipeline {
         stage('Build') {
             steps {
 				echo "Cluster Name: ${clustername}"
-				echo "Port: ${port}
+				echo "Port: ${port}"
              	sh '''
                     pwd
                     cd nodejs_app/

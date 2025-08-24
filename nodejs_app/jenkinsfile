@@ -13,6 +13,8 @@ pipeline {
 				echo "Cluster Name: ${clustername}"
 				echo "Port: ${port}"
              	sh '''
+                    echo "Cluster Name: ${clustername}"
+					echo "Port: ${port}"
                     pwd
                     cd nodejs_app/
                     sudo su

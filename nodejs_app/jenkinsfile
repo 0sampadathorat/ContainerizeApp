@@ -9,41 +9,38 @@ pipeline {
             steps {
                 withDockerRegistry(credentialsId: 'dockerhub', url: 'https://registry.hub.docker.com') {
                     sh '''
-                    echo "$CLUSTERNAME"
-                    cd nodejs_app/
-                    docker build -t sampubeta/nodejs-app .
-                    docker push sampubeta/nodejs-app
-                    '''
+                        echo "$CLUSTERNAME"
+                        cd nodejs_app/
+                        docker build -t sampubeta/nodejs-app .
+                        docker push sampubeta/nodejs-app
+                    '''}
                 }
-             }
-         }
-     }
-     stage('Deploy') {
-            steps {
-                dir('nodejs_app/') {
-                    sh """
-                        echo "Exporting Kubeconfig for cluster: ${CLUSTER_NAME}"
-                        export KUBECONFIG=$CLUSTER_NAME
-                        kubectl version
-                        
-                        # Apply Kubernetes manifests
-                        kubectl apply -f node_app_deploy.yaml --validate=false
-                        kubectl apply -f node_app_service.yaml
-                        kubectl patch svc node-app-service -p '{"spec": {"type": "NodePort"}}'
-                        
-                        # Wait for pod to stabilize and get its logs
-                        sleep 5
-                        kubectl get pod | grep node
-                        pod_name=\$(kubectl get po -l app=node-app | grep 'Running' | head -n 1 | cut -d" " -f1)
-                        sleep 10
-                        if [ -n "\$pod_name" ]; then
-                            kubectl logs "\$pod_name"
-                        else
-                            echo "Could not find a running pod. Skipping log retrieval."
-                        fi
-                    """
-                }
-            }
             }
         }
+        stage('Deploy') {
+            steps {
+                sh """
+                    echo "Exporting Kubeconfig for cluster: ${CLUSTER_NAME}"
+                    export KUBECONFIG=$CLUSTER_NAME
+                    kubectl version
+                    
+                    # Apply Kubernetes manifests
+                    kubectl apply -f node_app_deploy.yaml --validate=false
+                    kubectl apply -f node_app_service.yaml
+                    kubectl patch svc node-app-service -p '{"spec": {"type": "NodePort"}}'
+                    
+                    # Wait for pod to stabilize and get its logs
+                    sleep 5
+                    kubectl get pod | grep node
+                    pod_name=\$(kubectl get po -l app=node-app | grep 'Running' | head -n 1 | cut -d" " -f1)
+                    sleep 10
+                    if [ -n "\$pod_name" ]; then
+                        kubectl logs "\$pod_name"
+                    else
+                        echo "Could not find a running pod. Skipping log retrieval."
+                    fi
+                """
+            }
+        }
+    }
 }

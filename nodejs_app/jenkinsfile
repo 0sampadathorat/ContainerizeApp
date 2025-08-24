@@ -4,9 +4,6 @@ pipeline {
         CLUSTER_NAME = "${params.ClusterName}"
         PORT = "${params.Port}"
     }
-        
-    }
-
     stages {
         stage('Push to Docker Registry') {
             steps {
@@ -15,7 +12,7 @@ pipeline {
                     sh 'docker build -t sampubeta/nodejs-app .'
                     sh 'docker push sampubeta/nodejs-app'
                 }
-            }
-        }
-    }    
+             }
+         }
+     }
 }

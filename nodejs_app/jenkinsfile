@@ -1,10 +1,10 @@
-def clustername = params.cluster ?: 'default-cluster'
-def port = params.port ?: '8080'
+#def clustername = params.ClusterName
+def port = params.Port
 
 pipeline {
     agent any
     environment {
-        CLUSTER_NAME = "${clustername}"
+        CLUSTER_NAME = "${params.ClusterName}"
         PORT = "${port}"
         
     }

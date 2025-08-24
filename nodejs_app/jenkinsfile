@@ -1,22 +1,22 @@
-def port = params.Port
-
 pipeline {
     agent any
     environment {
         CLUSTER_NAME = "${params.ClusterName}"
-        PORT = "${port}"
+        PORT = "${params.Port}"
+    }
         
     }
 
     stages {
-        stage('Build') {
+        stage('Push to Docker Registry') {
             steps {
-                sh '''
-                    echo "Cluster Name: $CLUSTER_NAME"
-                    echo "Port: $PORT"
-                    pwd
-                '''
+                withDockerRegistry(credentialsId: 'dockerhub', url: 'https://registry.hub.docker.com') {
+                    // All steps inside this block will be executed with the specified Docker credentials.
+                    sh 'docker build -t sampubeta/nodejs-app .'
+                    sh 'docker push sampubeta/nodejs-app'
+                }
             }
         }
     }
+}    
 }

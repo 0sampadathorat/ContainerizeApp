@@ -17,8 +17,6 @@ pipeline {
                     echo "Cluster Name: $CLUSTER_NAME"
                     echo "Port: $PORT"
                     pwd
-                    cd nodejs_app/
-                    sudo su
                 '''
             }
         }

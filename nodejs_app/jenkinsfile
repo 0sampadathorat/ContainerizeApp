@@ -1,5 +1,5 @@
-def clustername = params.cluster
-def port = params.port
+def clustername = params.cluster ?: 'default-cluster'
+def port = params.port ?: '8080'
 
 pipeline {
     agent any

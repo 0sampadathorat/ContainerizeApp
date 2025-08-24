@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Push to Docker Registry') {
             steps {
-                withDockerRegistry(credentialsId: 'dockerhub', url: 'https://registry.hub.docker.com') {
+                withDockerRegistry(credentialsId: 'dockerhub', url: 'https://hub.docker.com/repository/docker/sampubeta/nodejs-app/general') {
                     // All steps inside this block will be executed with the specified Docker credentials.
                     sh 'docker build -t sampubeta/nodejs-app .'
                     sh 'docker push sampubeta/nodejs-app'
